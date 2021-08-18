@@ -7,31 +7,15 @@ public class Account {
     private BigDecimal balance;
     private Long account_id;
     private Long user_id;
-public Account(){
 
-}
-
-    public BigDecimal getBalance() {
-        return balance;
+    public Account(){
     }
 
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
-    }
-
-    public Long getAccount_id() {
-        return account_id;
-    }
-
-    public void setAccount_id(Long account_id) {
+    public Account(BigDecimal balance, Long account_id, Long user_id) {
+        this.balance= balance;
         this.account_id = account_id;
-    }
-
-    public Long getUser_id() {
-        return user_id;
-    }
-
-    public void setUser_id(Long user_id) {
         this.user_id = user_id;
     }
+
+
 }
