@@ -7,13 +7,6 @@ import java.math.BigDecimal;
 
 public interface AccountDao {
 
-    Account getAccount (User user);
-
-    //maybe make these not void later
-    void withdraw(BigDecimal withdrawAmt);
-
-    void deposit(BigDecimal depositAmount);
-
-    Account createAccount (Long userId);
+    Account getBalance (String user);
 
 }

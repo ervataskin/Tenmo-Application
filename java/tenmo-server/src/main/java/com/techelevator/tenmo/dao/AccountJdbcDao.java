@@ -1,7 +1,6 @@
 package com.techelevator.tenmo.dao;
 
 import com.techelevator.tenmo.model.Account;
-import com.techelevator.tenmo.model.User;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -15,42 +14,40 @@ public class AccountJdbcDao implements AccountDao {
 
     public AccountJdbcDao(DataSource ds){
 
-        this.jdbcTemplate = new JdbcTemplate(ds);
-    }
+        this.jdbcTemplate = new JdbcTemplate(ds);}
+
 
     @Override
-    public Account getAccount (User user){
-        Account retrievedAccount = null;
-        String sql = "SELECT balance, account_id, user_id FROM accounts WHERE user_id = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, user.getId());
-        if (results.next()) {
-            mapRowToAccount(results);
+    public Account getBalance (String user){
+
+        // given the String user, we need to figure out the account_id associated with that user
+        // Another SQL query perhaps?
+        // No longer have to hardcode the 2001 listed underneath.
+
+        // 1. SQL query that retrieves an account_id given a username. Store this into a String.
+        // 2. Run the query from step 1 using the jdbcTemplate, jdbcTemplate.queryForRowSet(....)
+        // 3. Pull the account_id for that user out of the row set.
+        // 4. you can plug this account_id into line 37 below, instead of 2001.
+
+
+
+
+        Account account =new Account();
+        String sql = "SELECT balance FROM accounts WHERE account_id=?";//query the database for specific users.
+        SqlRowSet results =  jdbcTemplate.queryForRowSet(sql,2001);//This run the sql query.
+
+        if(results.next()){ //scanning the results
+
+
+
+
+            double balance =results.getDouble("balance");// we take out the value for the coloumns is called balance
+            BigDecimal bigDecimal= new BigDecimal(balance);//transforming double into bigdecimal object.
+
+            account.setBalance(bigDecimal); // puts in whatever retrieved from the database.
+
         }
-        //why is this always null? what have i done to anger the java spirits?
-        return retrievedAccount;
-    }
 
-    @Override
-    public void withdraw(BigDecimal withdrawAmt) {
-
-    }
-
-    @Override
-    public void deposit(BigDecimal depositAmount) {
-
-    }
-
-    @Override
-    public Account createAccount(Long userId) {
-        return null;
-    }
-
-    private Account mapRowToAccount (SqlRowSet results) {
-        //translates sql rowset results into a java account object that we can use to manipulate data before updating
-        BigDecimal balance = results.getBigDecimal("balance");
-        Long account_id = results.getLong("account_id");
-        Long user_id = results.getLong("user_id");
-        Account newAccount = new Account(balance, account_id, user_id);
-        return newAccount;
+        return account;
     }
 }
