@@ -5,6 +5,11 @@ import com.techelevator.tenmo.model.UserCredentials;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.AuthenticationServiceException;
 import com.techelevator.view.ConsoleService;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.client.RestTemplate;
+
+import java.net.http.HttpHeaders;
 
 public class App {
 
@@ -25,6 +30,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
     private AuthenticatedUser currentUser;
     private ConsoleService console;
     private AuthenticationService authenticationService;
+    private RestTemplate restTemplate;
 
     public static void main(String[] args) {
     	App app = new App(new ConsoleService(System.in, System.out), new AuthenticationService(API_BASE_URL));
@@ -34,6 +40,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
     public App(ConsoleService console, AuthenticationService authenticationService) {
 		this.console = console;
 		this.authenticationService = authenticationService;
+		this.restTemplate = new RestTemplate();
 	}
 
 	public void run() {
@@ -69,7 +76,18 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 
 	private void viewCurrentBalance() {
 		// TODO Auto-generated method stub
-		
+
+//		System.out.println(currentUser.getToken());
+//		System.out.println(currentUser.getUser().getId());
+//		System.out.println(currentUser.getUser().getUsername());
+//		HttpHeaders header = new HttpHeaders();
+//		header.setBearerAuth (currentUser.getToken());
+//		HttpEntity entity = new HttpEntity(headers);
+//
+//		Balance balance = restTemplate.exchange ("http://localhost:8080/balance", HttpMethod.GET,Balance.class).getBody();
+//
+//		System.out.println(balance.getBalance());
+
 	}
 
 	private void viewTransferHistory() {
