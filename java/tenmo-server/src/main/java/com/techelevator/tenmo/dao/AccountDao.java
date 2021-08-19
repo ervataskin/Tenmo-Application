@@ -9,4 +9,12 @@ public interface AccountDao {
 
     Account getBalance (String user);
 
+    boolean checkBalance (String user, BigDecimal amount);
+
+    boolean verifyAccount (String user);
+
+    BigDecimal withdrawFunds();
+
+    BigDecimal depositFunds();
+
 }

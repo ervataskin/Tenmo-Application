@@ -50,4 +50,25 @@ public class AccountJdbcDao implements AccountDao {
 
         return account;
     }
+
+    @Override
+    public boolean checkBalance(String user, BigDecimal amount) {
+        return false;
+    }
+
+    @Override
+    public boolean verifyAccount(String user) {
+        return false;
+    }
+
+    @Override
+    public BigDecimal withdrawFunds() {
+        return null;
+    }
+
+    @Override
+    public BigDecimal depositFunds() {
+        return null;
+    }
+
 }
