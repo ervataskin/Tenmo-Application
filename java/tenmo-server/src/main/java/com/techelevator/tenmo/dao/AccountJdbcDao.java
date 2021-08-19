@@ -24,6 +24,7 @@ public class AccountJdbcDao implements AccountDao {
 
     @Override
     public BigDecimal getAccountBalance (String user){
+        //TODO: create an overloaded method of getbalance that allows us to use the userId OR the username;
         int user_id = userDao.findIdByUsername(user);
         Account account = new Account();
         String sql = "SELECT balance FROM accounts WHERE user_id=?";//query the database for specific users.
@@ -40,6 +41,7 @@ public class AccountJdbcDao implements AccountDao {
 
     @Override
     public boolean checkBalance(String user, BigDecimal amount) {
+        //TODO: Change to use userId
         BigDecimal currentBalance = getAccountBalance(user);
 
         boolean enoughFunds = false;
@@ -52,6 +54,7 @@ public class AccountJdbcDao implements AccountDao {
 
     @Override
     public boolean verifyAccount(String user) {
+        //TODO: Change to use userId
         int userId = userDao.findIdByUsername(user);
         String sql = "SELECT account_id FROM accounts WHERE user_id = ?;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
@@ -64,6 +67,7 @@ public class AccountJdbcDao implements AccountDao {
 
     @Override
     public BigDecimal withdrawFunds(String user, BigDecimal amount) {
+        //TODO: Change to use the userId instead of the username
         boolean checkBalance = checkBalance(user, amount);
         BigDecimal newBalance;
 
@@ -80,6 +84,7 @@ public class AccountJdbcDao implements AccountDao {
 
     @Override
     public BigDecimal depositFunds(String user, BigDecimal amount) {
+        //TODO: Change this to use the userId instead of the user directly.
         BigDecimal newBalance = getAccountBalance(user).add(amount);
         int userId = userDao.findIdByUsername(user);
         String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
