@@ -55,9 +55,10 @@ public class TransferJdbcDao implements TransferDao {
     public void requestTransfer(Long accountFrom, Long accountTo, BigDecimal amount) {
         Long transferType = 1L;
         Long transferStatus = 1L;
-
         Long id = createTransfer(transferType, transferStatus, accountFrom, accountTo, amount);
 
+        // All this does is create a transfer in the transfer table. No math is done because it's not actually approved.
+        // Cannot have it check the balance of the From account here for privacy reasons.
     }
 
     @Override
@@ -68,7 +69,7 @@ public class TransferJdbcDao implements TransferDao {
         //creates transfer row in transfer table.
         // Actually maybe this is where we need to check the balance, and then again on approval for requested transfers.
         Long id = createTransfer(transferType, transferStatus, accountFrom, accountTo, amount);
-
+        //
         //create transfer object to manipulate
         // check balance using accountDAO method
             // if balance > amount, approve transfer, update balances.
@@ -80,8 +81,11 @@ public class TransferJdbcDao implements TransferDao {
     @Override
     public void approveTransfer(Long transferId) {
         Transfer thisTransfer = getTransferById(transferId);
+        // only continue if this transfer is in "pending" status. Rejected transfers cannot be approved and approved transfers cannot be approved again.
         //get "to" account, "from" account, and amount to transfer.
             //TODO: this will actually directly call the userId for both accounts, use the userId directly in those methods.
+        //Do the math that subtracts from one account and adds to another.
+        //Should this return something to let te user know the transfer was completed?
     }
 
     private Transfer mapRowToTransfer(SqlRowSet results) {
