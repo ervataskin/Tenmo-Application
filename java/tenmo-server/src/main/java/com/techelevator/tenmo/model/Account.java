@@ -20,4 +20,8 @@ public class Account {
 
     public void setBalance(BigDecimal bigDecimal) {
     }
+
+    public BigDecimal getBalance() {
+        return balance;
+    }
 }

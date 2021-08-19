@@ -7,14 +7,14 @@ import java.math.BigDecimal;
 
 public interface AccountDao {
 
-    Account getBalance (String user);
+    BigDecimal getAccountBalance (String user);
 
     boolean checkBalance (String user, BigDecimal amount);
 
     boolean verifyAccount (String user);
 
-    BigDecimal withdrawFunds();
+    BigDecimal withdrawFunds(String user, BigDecimal amount);
 
-    BigDecimal depositFunds();
+    BigDecimal depositFunds(String user, BigDecimal amount);
 
 }
