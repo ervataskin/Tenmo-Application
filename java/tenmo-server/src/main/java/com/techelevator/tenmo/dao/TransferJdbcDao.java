@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -17,13 +18,25 @@ public class TransferJdbcDao implements TransferDao {
     @Autowired
     AccountDao accountDao;
 
+    @Autowired
+    UserDao userDao;
+
     public TransferJdbcDao(DataSource ds) {
         this.jdbcTemplate = new JdbcTemplate(ds);
     }
 
     @Override
-    public List<Transfer> getMyTransfers() {
-        return null;
+    public List<Transfer> getMyTransfers(String user) {
+        List<Transfer> myTransfers = new ArrayList<>();
+        int userId = userDao.findIdByUsername(user);
+        String sql = "SELECT transfer_id FROM transfers WHERE user_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
+        while (results.next()) {
+            Long transferId = results.getLong("transfer_id");
+            myTransfers.add(getTransferById(transferId));
+        }
+        return myTransfers;
+        //TODO: Update toString method for all models (client side?)
     }
 
     @Override
