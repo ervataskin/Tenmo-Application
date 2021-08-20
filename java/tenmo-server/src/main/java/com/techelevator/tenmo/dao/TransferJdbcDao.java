@@ -87,8 +87,6 @@ public class TransferJdbcDao implements TransferDao {
                 String sql = "UPDATE transfers SET transfer_status_id = 2 WHERE transfer_id = ?;";
                 jdbcTemplate.update(sql, transferId);
 
-                accountDao.
-
             } else {
                 //return error that there isn't enough money in the account, don't change transfer status.
             }
