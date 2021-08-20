@@ -52,53 +52,57 @@ public class TransferJdbcDao implements TransferDao {
     }
 
     @Override
-    public Long createTransfer(Long transferType, Long transferStatus, Long accountFrom, Long accountTo, BigDecimal amount) {
-        //create object and then pass that into the sql statement
-        //sql statement to insert transfer into transfer table;
-        //transfer should include all information
-        //you should be able to pass a status into this method from the method that calls it
-        //it should return the transfer id so that the transfer can be manipulated within the next method,
-        //so this method should return a Long or int. Figure out which of these we need.
-        Long newId = ;
-        return newId;
-
-    }
-
-    @Override
-    public void requestTransfer(Long accountFrom, Long accountTo, BigDecimal amount) {
-        Long transferType = 1L;
+    public Long createTransfer(Long transferType, Long accountFrom, Long accountTo, BigDecimal amount) {
         Long transferStatus = 1L;
-        Long id = createTransfer(transferType, transferStatus, accountFrom, accountTo, amount);
-
-        // All this does is create a transfer in the transfer table. No math is done because it's not actually approved.
-        // Cannot have it check the balance of the From account here for privacy reasons.
+        String sql = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
+                "VALUES (?, ?, ?, ?, ?, ?) RETURNING transfer_id;";
+        Long newId = jdbcTemplate.queryForObject(sql, Long.class, transferType, transferStatus, accountFrom, accountTo, amount);
+        return newId;
     }
 
     @Override
-    public void sendTransfer(Long accountFrom, Long accountTo, BigDecimal amount) {
+    public Transfer requestTransfer(Long accountFrom, Long accountTo, BigDecimal amount) {
+        Long transferType = 1L;
+        Long id = createTransfer(transferType, accountFrom, accountTo, amount);
+        return getTransferById(id);
+    }
+
+    @Override
+    public Transfer sendTransfer(Long accountFrom, Long accountTo, BigDecimal amount) {
         Long transferType = 2L;
-        Long transferStatus = 2L;
 
-        //creates transfer row in transfer table.
-        // Actually maybe this is where we need to check the balance, and then again on approval for requested transfers.
-        Long id = createTransfer(transferType, transferStatus, accountFrom, accountTo, amount);
-        //
-        //create transfer object to manipulate
-        // check balance using accountDAO method
-            // if balance > amount, approve transfer, update balances.
-            // if balance < amount, reject transfer, return error.
-                //TODO: set up "reject transfer" method;
+        Long id = createTransfer(transferType, accountFrom, accountTo, amount);
+        Transfer thisTransfer = approveTransfer(id);
 
+        return thisTransfer;
     }
 
     @Override
-    public void approveTransfer(Long transferId) {
+    public Transfer approveTransfer(Long transferId) {
         Transfer thisTransfer = getTransferById(transferId);
-        // only continue if this transfer is in "pending" status. Rejected transfers cannot be approved and approved transfers cannot be approved again.
-        //get "to" account, "from" account, and amount to transfer.
             //TODO: this will actually directly call the userId for both accounts, use the userId directly in those methods.
-        //Do the math that subtracts from one account and adds to another.
-        //Should this return something to let te user know the transfer was completed?
+        if (thisTransfer.getId() == 1) { // check that transfer status == 1
+            if (accountDao.checkBalance()) {// is accountFrom balance higher than amount being transferred
+                // do the math
+                String sql = "UPDATE transfers SET transfer_status_id = 2 WHERE transfer_id = ?;";
+                jdbcTemplate.update(sql, transferId);
+
+                accountDao.
+
+            } else {
+                //return error that there isn't enough money in the account, don't change transfer status.
+            }
+        } else {
+            //return error that transfer cannot be approved because it has already been approved or rejected
+        }
+    }
+
+    public Transfer rejectTransfer (Long transferId) {
+        Transfer thisTransfer = getTransferById(transferId);
+        thisTransfer.setStatusId(3L);
+        String sql = "UPDATE transfers SET transfer_status_id = 3 WHERE transfer_id = ?;";
+        jdbcTemplate.update(sql, thisTransfer.getId());
+        return thisTransfer;
     }
 
     private Transfer mapRowToTransfer(SqlRowSet results) {

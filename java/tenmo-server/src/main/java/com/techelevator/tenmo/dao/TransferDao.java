@@ -10,12 +10,14 @@ public interface TransferDao {
 
     Transfer getTransferById(Long id);
 
-    Long createTransfer(Long transferType, Long transferStatus, Long accountFrom, Long accountTo, BigDecimal Amount);
+    Long createTransfer(Long transferType, Long accountFrom, Long accountTo, BigDecimal Amount);
 
-    void requestTransfer(Long accountFrom, Long accountTo, BigDecimal amount);
+    Transfer requestTransfer(Long accountFrom, Long accountTo, BigDecimal amount);
 
-    void sendTransfer(Long accountFrom, Long accountTo, BigDecimal amount);
+    Transfer sendTransfer(Long accountFrom, Long accountTo, BigDecimal amount);
 
-    void approveTransfer(Long transferId);
+    Transfer approveTransfer(Long transferId);
+
+    Transfer rejectTransfer(Long transferId);
 
 }

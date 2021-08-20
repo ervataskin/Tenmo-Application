@@ -44,6 +44,9 @@ I'll remove this notice once they're moved.
 
 ### Models
 
+**GENERAL TASK**
+* Make sure that model variables are consistent; Long vs Int. UserID uses int, so should we use that in the rest of the project? 
+
 ### Controllers
 
 ## Client Side
