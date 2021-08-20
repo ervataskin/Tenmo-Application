@@ -6,18 +6,22 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public interface TransferDao {
-    List<Transfer> getMyTransfers(String user);
 
-    Transfer getTransferById(Long id);
+    Transfer getTransferById(Long transferId);
 
-    Long createTransfer(Long transferType, Long accountFrom, Long accountTo, BigDecimal Amount);
+    List<Transfer> getMyTransfers(Long userId);
 
-    Transfer requestTransfer(Long accountFrom, Long accountTo, BigDecimal amount);
+    List<Transfer> getPendingTransfers(Long userId);
+
+    Long createTransfer (Long transferType, Long accountFrom, Long accountTo, BigDecimal amount);
 
     Transfer sendTransfer(Long accountFrom, Long accountTo, BigDecimal amount);
+
+    Transfer requestTransfer(Long accountFrom, Long accountTo, BigDecimal amount);
 
     Transfer approveTransfer(Long transferId);
 
     Transfer rejectTransfer(Long transferId);
 
+    void updateTransferStatus(Long transferId, Long statusId);
 }
