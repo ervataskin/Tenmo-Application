@@ -25,4 +25,15 @@ public class ApplicationController {
           return accountDao.getMyBalance(principal.getName());
      }
 
+     //@RequestMapping(path = "/users", method = RequestMethod.GET)
+
+     //@RequestMapping(path = "/send", method = RequestMethod.GET)
+
+     //@RequestMapping(path = "/request", method = RequestMethod.GET)
+
+     //@RequestMapping(path = "/transfers", method = RequestMethod.GET)
+
+     //@RequestMapping(path = "/transfers/approve", method = RequestMethod.GET)
+
+     //@RequestMapping(path = "/transfers/reject", method = RequestMethod.GET)
 }
