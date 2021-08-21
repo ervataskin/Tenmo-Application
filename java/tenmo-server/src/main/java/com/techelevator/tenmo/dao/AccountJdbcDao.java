@@ -8,88 +8,91 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
-import java.security.Principal;
 
 @Component
-public class AccountJdbcDao implements AccountDao {
+public class AccountJdbcDao implements AccountDao{
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
     UserDao userDao;
 
-    public AccountJdbcDao(DataSource ds){
-
-        this.jdbcTemplate = new JdbcTemplate(ds);}
-
+    public AccountJdbcDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
-    public BigDecimal getAccountBalance (String user){
-        //TODO: create an overloaded method of getbalance that allows us to use the userId OR the username;
-        int user_id = userDao.findIdByUsername(user);
+    public Account getMyBalance(String username) {
+        int userId = userDao.findIdByUsername(username);
         Account account = new Account();
-        String sql = "SELECT balance FROM accounts WHERE user_id=?";//query the database for specific users.
-        SqlRowSet results =  jdbcTemplate.queryForRowSet(sql,user_id);//This run the sql query.
-
-        if(results.next()){ //scanning the results
-            double balance = results.getDouble("balance");// we take out the value for the coloumns is called balance
-            BigDecimal bigDecimal= new BigDecimal(balance);//transforming double into bigdecimal object.
-
-            account.setBalance(bigDecimal); // puts in whatever retrieved from the database.
+        String sql = "SELECT balance FROM accounts WHERE user_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
+        if (results.next()) {
+            account.setBalance(results.getBigDecimal("balance"));
         }
-        return account.getBalance();
+        return account;
     }
 
     @Override
-    public boolean checkBalance(String user, BigDecimal amount) {
-        //TODO: Change to use userId
-        BigDecimal currentBalance = getAccountBalance(user);
-
-        boolean enoughFunds = false;
-
-        if (currentBalance.compareTo(amount) >= 0) {
-            enoughFunds = true;
+    public Account getAccountById(Long accountId) {
+        Account account = null;
+        String sql = "SELECT account_id, user_id, balance FROM accounts WHERE account_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId);
+        if (results.next()) {
+            account = mapRowToAccount(results);
         }
-        return enoughFunds;
+        return account;
     }
 
     @Override
-    public boolean verifyAccount(String user) {
-        //TODO: Change to use userId
-        int userId = userDao.findIdByUsername(user);
+    public Account getAccountByUserId(Long userId) {
+        Account account = null;
         String sql = "SELECT account_id FROM accounts WHERE user_id = ?;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
         if (results.next()) {
+            account = mapRowToAccount(results);
+        }
+        return account;
+    }
+
+    @Override
+    public Account getAccountByUsername(String username) {
+        int userId = userDao.findIdByUsername(username);
+        return getAccountByUserId((long) userId);
+    }
+
+    @Override
+    public boolean checkAccountBalance(Long accountId, BigDecimal amount) {
+        Account account = getAccountById(accountId);
+        if (account.getBalance().compareTo(amount) >= 0) {
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override
-    public BigDecimal withdrawFunds(String user, BigDecimal amount) {
-        //TODO: Change to use the userId instead of the username
-        boolean checkBalance = checkBalance(user, amount);
-        BigDecimal newBalance;
-
-        if (checkBalance) {
-            int userId = userDao.findIdByUsername(user);
-            newBalance = getAccountBalance(user).subtract(amount);
-            String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
-            jdbcTemplate.update(sql, newBalance, userId);
-        } else {
-            newBalance = getAccountBalance(user);
-        }
-        return newBalance;
+    public BigDecimal withdraw(Long accountId, BigDecimal fromAmount) {
+        BigDecimal fromBalance = getAccountById(accountId).getBalance();
+        return fromBalance.subtract(fromAmount);
     }
 
     @Override
-    public BigDecimal depositFunds(String user, BigDecimal amount) {
-        //TODO: Change this to use the userId instead of the user directly.
-        BigDecimal newBalance = getAccountBalance(user).add(amount);
-        int userId = userDao.findIdByUsername(user);
-        String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
-        jdbcTemplate.update(sql, newBalance, userId);
-        return newBalance;
+    public BigDecimal deposit(Long accountId, BigDecimal toAmount) {
+        BigDecimal toBalance = getAccountById(accountId).getBalance();
+        return toBalance.add(toAmount);
+    }
+
+    @Override
+    public void updateAccount(Long acctId, BigDecimal newBalance) {
+        String sql = "UPDATE accounts SET balance = ? WHERE account_id = ?;";
+        jdbcTemplate.update(sql, acctId, newBalance);
+    }
+
+    private Account mapRowToAccount(SqlRowSet results) {
+        Account account = new Account();
+        account.setId(results.getLong("account_id"));
+        account.setBalance(results.getBigDecimal("balance"));
+        account.setUserId(results.getLong("user_id"));
+        return account;
     }
 
 }
