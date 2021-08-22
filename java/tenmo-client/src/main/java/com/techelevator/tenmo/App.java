@@ -103,8 +103,6 @@ public class App {
 		transfer.setAccount_to(Long.valueOf(toUser));
 		transfer.setAmount(new BigDecimal(amount));
 
-		System.out.println(transfer.getAccount_to() + " " + transfer.getAmount());
-
 		Transfer newTransfer = applicationService.sendTransfer(transfer, currentUser.getToken());
 
 		if (newTransfer.getTransfer_status_id() == 2L) {
@@ -116,6 +114,22 @@ public class App {
 
 	private void requestBucks() {
 		// TODO Auto-generated method stub
+		User[]	userList = applicationService.getAllUsers(currentUser.getToken());
+		for (User user : userList) {
+			System.out.println("Username: " + user.getUsername() + "(ID: " + user.getId() + ")");
+		}
+
+		String fromUser = console.getUserInput("Enter the ID of the user you want to request TE bucks from");
+		String amount = console.getUserInput("Enter the amount to send");
+
+		Transfer transfer = new Transfer();
+
+		transfer.setAccount_from(Long.valueOf(fromUser));
+		transfer.setAmount(new BigDecimal(amount));
+
+		Transfer newTransfer = applicationService.requestTransfer(transfer, currentUser.getToken());
+
+		System.out.println("Transfer requested. Returning to main menu.");
 
 	}
 

@@ -70,7 +70,6 @@ public class ApplicationController {
     public List<Transfer> getMyTransfers(Principal principal) {
          int userId = userDao.findIdByUsername(principal.getName());
          return transferDao.getMyTransfers((long) userId);
-
     }
 
     @RequestMapping (path = "/transfers/pending", method = RequestMethod.GET)

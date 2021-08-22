@@ -38,6 +38,25 @@ public class ApplicationService {
         return response.getBody();
     }
 
+    public Transfer[] getMyTransfers(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        HttpEntity entity = new HttpEntity(headers);
+        ResponseEntity<Transfer[]> response =
+                restTemplate.exchange(BASE_URL + "transfers", HttpMethod.GET, entity, Transfer[].class);
+        return response.getBody();
+    }
+
+    public Transfer[] getMyPendingTransfers(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        HttpEntity entity = new HttpEntity(headers);
+        ResponseEntity<Transfer[]> response =
+                restTemplate.exchange(BASE_URL + "transfers/pending", HttpMethod.GET, entity, Transfer[].class);
+        return response.getBody();
+    }
+        
+
     public Transfer sendTransfer (Transfer transfer, String token){
         try {
             restTemplate.exchange(BASE_URL + "transfers/send", HttpMethod.POST, makeTransferEntity(transfer, token), Transfer.class);
@@ -47,7 +66,7 @@ public class ApplicationService {
         return transfer;
     }
 
-    public Transfer requestTransfer (String token,Transfer transfer){
+    public Transfer requestTransfer (Transfer transfer, String token){
         try {
             restTemplate.exchange(BASE_URL + "transfers/request", HttpMethod.POST, makeTransferEntity(transfer, token), Transfer.class);
         } catch (RestClientResponseException ex) {
@@ -56,8 +75,8 @@ public class ApplicationService {
         return transfer;
     }
 
-    
-    public Transfer approveTransfer (String token, Long transferId) {
+    // TODO: Implement approve transfer as a PUT method (controller side)
+    public Transfer approveTransfer (Long transferId, String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         HttpEntity entity = new HttpEntity(headers);
@@ -67,7 +86,7 @@ public class ApplicationService {
 
     }
 
-
+    // TODO: Implement reject transfer as a PUT method (controller side)
     public Transfer rejectTransfer (String token,Long transferId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
