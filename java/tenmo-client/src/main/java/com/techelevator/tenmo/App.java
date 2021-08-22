@@ -12,6 +12,10 @@ import java.sql.SQLOutput;
 
 public class App {
 
+	// If I had another day, maybe two, I could probably get this program working much more like a grown up.
+	// As it is, it functions on the database side, mostly without exploding??
+	// Current mood: The garbage will do.
+
 	private static final String API_BASE_URL = "http://localhost:8080/";
 
 	private static final String MENU_OPTION_EXIT = "Exit";
@@ -86,28 +90,48 @@ public class App {
 
 	private void viewTransferHistory() {
 		// TODO Auto-generated method stub
-		Transfer[] transferList = applicationService.getMyTransfers(currentUser.getToken());
-		System.out.println(transferListHeader);
+		boolean stay = true;
+		while (stay) {
+			Transfer[] transferList = applicationService.getMyTransfers(currentUser.getToken());
+			System.out.println(transferListHeader);
 
-		//TODO need to be able to see account from
-		for (Transfer transfer : transferList) {
-			Long toAccount = transfer.getAccount_to();
-			String username = applicationService.findUsernameByAccountId(toAccount, currentUser.getToken()).getUsername();
-			System.out.println(transfer.getTransfer_id() + "\t\t\t" + username + "\t\t\t$" + transfer.getAmount());
+			//TODO need to be able to see account from
+			for (Transfer transfer : transferList) {
+				Long toAccount = transfer.getAccount_to();
+				String username = applicationService.findUsernameByAccountId(toAccount, currentUser.getToken()).getUsername();
+				System.out.println(transfer.getTransfer_id() + "\t\t\t" + username + "\t\t\t$" + transfer.getAmount());
+			}
+
+			String transferDetail = console.getUserInput("\nEnter a transfer ID to view details, or enter 0 to return to the main menu");
+			if (transferDetail.equals("0")){
+				stay = false;
+			} else {
+				transferDetail(transferList, Long.valueOf(transferDetail));
+			}
 		}
-
 	}
 
 	private void viewPendingRequests() {
 		// TODO pending transfers currently show all transfers, not just pending
-		Transfer[] transferList = applicationService.getMyPendingTransfers(currentUser.getToken());
-		System.out.println(transferListHeader);
+		boolean stay = true;
+		while (stay) {
+			Transfer[] transferList = applicationService.getMyPendingTransfers(currentUser.getToken());
+			System.out.println(transferListHeader);
 
 		// TODO need to be able to see account FROM as well
-		for (Transfer transfer : transferList) {
-			Long toAccount = transfer.getAccount_to();
-			String username = applicationService.findUsernameByAccountId(toAccount, currentUser.getToken()).getUsername();
-			System.out.println(transfer.getTransfer_id() + "\t\t\t" + username + "\t\t\t$" + transfer.getAmount());
+		// TODO make things look less stupid when they print out
+			for (Transfer transfer : transferList) {
+				Long toAccount = transfer.getAccount_to();
+				String username = applicationService.findUsernameByAccountId(toAccount, currentUser.getToken()).getUsername();
+				System.out.println(transfer.getTransfer_id() + "\t\t\t" + username + "\t\t\t\t\t\t $" + transfer.getAmount());
+			}
+
+			String transferDetail = console.getUserInput("\nEnter a transaction ID to approve or reject, or enter 0 to return to the main menu");
+			if (transferDetail.equals("0")){
+				mainMenu();
+			} else {
+				updateStatus(Long.valueOf(transferDetail));
+			}
 		}
 	}
 
@@ -151,6 +175,51 @@ public class App {
 		Transfer newTransfer = applicationService.requestTransfer(transfer, currentUser.getToken());
 
 		System.out.println("Transfer requested. Returning to main menu.");
+	}
+
+	private void transferDetail(Transfer[] transferList, Long transferId) {
+			for (Transfer transfer : transferList) {
+				if (transfer.getTransfer_id().equals(transferId)) {
+					String transferStatus = "no status";
+					boolean displayPending = false;
+					String toUsername = applicationService.findUsernameByAccountId(transfer.getAccount_to(), currentUser.getToken()).getUsername();
+					String fromUsername = applicationService.findUsernameByAccountId(transfer.getAccount_from(), currentUser.getToken()).getUsername();
+
+					if (transfer.getTransfer_status_id() == 1) {
+						transferStatus = "Pending";
+						displayPending = true;
+					} else if (transfer.getTransfer_status_id() == 2) {
+						transferStatus = "Approved";
+					} else if (transfer.getTransfer_status_id() == 3) {
+						transferStatus = "Rejected";
+					}
+
+					System.out.println("----------------------------");
+					System.out.println("Transfer " + transfer.getTransfer_id() + ": $" + transfer.getAmount() + " sent to " + toUsername + " from " + fromUsername + ". (" + transferStatus + ")");
+					System.out.println("----------------------------\n");
+
+					String exit = console.getUserInput("Enter anything to exit.");
+					if (exit != null) {
+						mainMenu();
+				}
+			}
+		}
+	}
+
+	private void updateStatus(Long transferDetail) {
+		// TODO Still says transfers approved through the app are pending even when they're not pending in the database.
+		boolean stay = true;
+		while (stay) {
+			String updateStatus = console.getUserInput("Would you like to (A)pprove or (R)eject this transaction?");
+			Transfer thisTransfer = applicationService.getTransferById(Long.valueOf(transferDetail), currentUser.getToken());
+			if (updateStatus.equalsIgnoreCase("A")) {
+				applicationService.approveTransfer(thisTransfer, currentUser.getToken());
+			} else if (updateStatus.equalsIgnoreCase("R")) {
+				applicationService.rejectTransfer(thisTransfer, currentUser.getToken());
+			} else {
+				stay = false;
+			}
+		}
 	}
 
 	private void exitProgram() {

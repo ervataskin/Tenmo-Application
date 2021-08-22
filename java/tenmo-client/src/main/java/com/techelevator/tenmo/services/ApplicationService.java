@@ -21,7 +21,7 @@ public class ApplicationService {
         this.BASE_URL = url;
     }
 
-    public Account getMyBalance(String token) {
+     public Account getMyBalance(String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         HttpEntity entity = new HttpEntity(headers);
@@ -66,6 +66,16 @@ public class ApplicationService {
         return response.getBody();
     }
 
+    public Transfer getTransferById(Long transferId, String token) {
+        Transfer transfer = new Transfer();
+        try {
+            transfer = restTemplate.exchange(BASE_URL + "transfers/" + transferId, HttpMethod.GET, makeAuthEntity(token), Transfer.class).getBody();
+        } catch (RestClientResponseException ex) {
+
+        }
+        return transfer;
+    }
+
     public Transfer sendTransfer (Transfer transfer, String token){
         try {
             restTemplate.exchange(BASE_URL + "transfers/send", HttpMethod.POST, makeTransferEntity(transfer, token), Transfer.class);
@@ -84,26 +94,23 @@ public class ApplicationService {
         return transfer;
     }
 
-    // TODO: Implement approve transfer as a PUT method (controller side)
-    public Transfer approveTransfer (Long transferId, String token) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity entity = new HttpEntity(headers);
-        ResponseEntity<Transfer> response = restTemplate.exchange(BASE_URL + "transfers/approve", HttpMethod.PUT, entity, Transfer.class);
-        return response.getBody();
-
-
+    public Transfer approveTransfer (Transfer transfer, String token) {
+        Transfer thisTransfer = new Transfer();
+        try {
+            thisTransfer = restTemplate.exchange(BASE_URL + "transfers/approve", HttpMethod.PUT, makeTransferEntity(transfer, token), Transfer.class).getBody();
+        } catch (RestClientResponseException ex) {
+        }
+        return thisTransfer;
     }
 
     // TODO: Implement reject transfer as a PUT method (controller side)
-    public Transfer rejectTransfer (String token,Long transferId) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity entity = new HttpEntity(headers);
-        ResponseEntity<Transfer> response = restTemplate.exchange(BASE_URL + "transfers/reject", HttpMethod.PUT, entity, Transfer.class);
-        return response.getBody();
-
-
+    public Transfer rejectTransfer (Transfer transfer, String token) {
+        Transfer thisTransfer = new Transfer();
+        try {
+            thisTransfer = restTemplate.exchange(BASE_URL + "transfers/reject", HttpMethod.PUT, makeTransferEntity(transfer, token), Transfer.class).getBody();
+        } catch (RestClientResponseException ex) {
+        }
+        return thisTransfer;
     }
 
     private HttpEntity<Transfer> makeTransferEntity(Transfer transfer, String token) {

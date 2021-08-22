@@ -58,9 +58,14 @@ public class ApplicationController {
         return transferDao.getMyTransfers((long) userId);
     }
 
+    @RequestMapping (path = "/transfers/{transferId}", method = RequestMethod.GET)
+    public Transfer getTransfer(@PathVariable("transferId") Long transferId) {
+        return transferDao.getTransferById(transferId);
+    }
+
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(path = "/transfers/send", method = RequestMethod.POST)
-        public Transfer sendTransfer(@RequestBody Transfer transfer, Principal principal) {
+    public Transfer sendTransfer(@RequestBody Transfer transfer, Principal principal) {
             int userId = userDao.findIdByUsername(principal.getName());
             Long accountFrom = accountDao.getAccountByUserId((long) userId).getAccount_id();
 
@@ -80,8 +85,6 @@ public class ApplicationController {
         return transferDao.requestTransfer(accountFrom, accountTo, transfer.getAmount());
     }
 
-
-
     @RequestMapping (path = "/transfers/pending", method = RequestMethod.GET)
     public List<Transfer> getPendingTransfers(Principal principal) {
         int userId = userDao.findIdByUsername(principal.getName());
@@ -89,12 +92,14 @@ public class ApplicationController {
     }
 
     @RequestMapping(path = "/transfers/approve", method = RequestMethod.PUT)
-    public Transfer approveTransfer(Long transferId) {
+    public Transfer approveTransfer(@RequestBody Transfer transfer) {
+        Long transferId = transfer.getTransfer_id();
      return transferDao.approveTransfer(transferId);
     }
 
     @RequestMapping(path = "/transfers/reject", method = RequestMethod.PUT)
-    public Transfer rejectTransfer(Long transferId) {
-    return transferDao.rejectTransfer(transferId);
+    public Transfer rejectTransfer(@RequestBody Transfer transfer) {
+        Long transferId = transfer.getTransfer_id();
+        return transferDao.rejectTransfer(transferId);
     }
 }

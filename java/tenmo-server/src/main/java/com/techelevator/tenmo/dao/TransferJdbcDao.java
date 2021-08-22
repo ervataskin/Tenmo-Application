@@ -64,7 +64,7 @@ public class TransferJdbcDao implements TransferDao{
         Account account = accountDao.getAccountByUserId(userId);
         Long accountId = account.getAccount_id();
 
-        String sql = "SELECT transfer_id FROM transfers WHERE account_from = ? OR account_to = ? AND transfer_status_id = 1;";
+        String sql = "SELECT transfer_id FROM transfers WHERE transfer_status_id = 1 AND account_from = ? OR account_to = ?;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId, accountId);
 
         while (results.next()) {
