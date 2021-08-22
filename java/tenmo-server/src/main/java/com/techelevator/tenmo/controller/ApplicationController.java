@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 @PreAuthorize("isAuthenticated()")
@@ -33,15 +34,28 @@ public class ApplicationController {
 
     @RequestMapping(path = "/users", method = RequestMethod.GET)
     public List<User> userList(Principal principal) {
-        List<User> userlist = userDao.findAll();
+        List<User> userlist = new ArrayList<>();
         List<User> userlist2 = userDao.findAll();
 
         for (User user : userlist2) {
             if (user.getUsername().equals(principal.getName())) {
-                userlist.remove(user);
+
+            } else {
+                userlist.add(user);
             }
         }
         return userlist;
+    }
+
+    @RequestMapping(path = "/user/{accountId}", method = RequestMethod.GET)
+    public User findUsernameByAccountId(@PathVariable("accountId") Long accountId) {
+        return userDao.findUsernameByAccountId(accountId);
+    }
+
+    @RequestMapping(path = "/transfers", method = RequestMethod.GET)
+    public List<Transfer> getMyTransfers(Principal principal) {
+        int userId = userDao.findIdByUsername(principal.getName());
+        return transferDao.getMyTransfers((long) userId);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
@@ -66,11 +80,7 @@ public class ApplicationController {
         return transferDao.requestTransfer(accountFrom, accountTo, transfer.getAmount());
     }
 
-    @RequestMapping(path = "/transfers", method = RequestMethod.GET)
-    public List<Transfer> getMyTransfers(Principal principal) {
-         int userId = userDao.findIdByUsername(principal.getName());
-         return transferDao.getMyTransfers((long) userId);
-    }
+
 
     @RequestMapping (path = "/transfers/pending", method = RequestMethod.GET)
     public List<Transfer> getPendingTransfers(Principal principal) {

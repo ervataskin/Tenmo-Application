@@ -38,6 +38,16 @@ public class ApplicationService {
         return response.getBody();
     }
 
+    public User findUsernameByAccountId(Long accountId, String token) {
+        User user = new User();
+        try {
+            user = restTemplate.exchange(BASE_URL + "user/" + accountId, HttpMethod.GET, makeAuthEntity(token), User.class).getBody();
+        } catch (RestClientResponseException ex) {
+
+        }
+        return user;
+    }
+
     public Transfer[] getMyTransfers(String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
@@ -56,7 +66,6 @@ public class ApplicationService {
         return response.getBody();
     }
 
-
     public Transfer sendTransfer (Transfer transfer, String token){
         try {
             restTemplate.exchange(BASE_URL + "transfers/send", HttpMethod.POST, makeTransferEntity(transfer, token), Transfer.class);
@@ -66,7 +75,7 @@ public class ApplicationService {
         return transfer;
     }
 
-    public Transfer requestTransfer (Transfer transfer, String token){
+    public Transfer requestTransfer(Transfer transfer, String token){
         try {
             restTemplate.exchange(BASE_URL + "transfers/request", HttpMethod.POST, makeTransferEntity(transfer, token), Transfer.class);
         } catch (RestClientResponseException ex) {
@@ -102,6 +111,13 @@ public class ApplicationService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(token);
         HttpEntity<Transfer> entity = new HttpEntity<>(transfer, headers);
+        return entity;
+    }
+
+    private HttpEntity makeAuthEntity(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        HttpEntity entity = new HttpEntity<>(headers);
         return entity;
     }
 }

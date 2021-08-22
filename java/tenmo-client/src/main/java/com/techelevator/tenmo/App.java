@@ -26,6 +26,11 @@ public class App {
 	private static final String MAIN_MENU_OPTION_LOGIN = "Login as different user";
 	private static final String[] MAIN_MENU_OPTIONS = { MAIN_MENU_OPTION_VIEW_BALANCE, MAIN_MENU_OPTION_SEND_BUCKS, MAIN_MENU_OPTION_VIEW_PAST_TRANSFERS, MAIN_MENU_OPTION_REQUEST_BUCKS, MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS, MAIN_MENU_OPTION_LOGIN, MENU_OPTION_EXIT };
 
+	private static final String transferListHeader = "-------------------------------------------\n" +
+			"Transfers\n" +
+			"ID\t\t\tFrom/To  \t\t\tAmount\n" +
+			"-------------------------------------------\n";
+
 	private AuthenticatedUser currentUser;
 	private ConsoleService console;
 	private AuthenticationService authenticationService;
@@ -77,21 +82,37 @@ public class App {
 		// TODO Auto-generated method stub
 		Account account = applicationService.getMyBalance(currentUser.getToken());
 		System.out.println("Current Balance: " + account.getBalance());
-		System.out.println(currentUser.getToken());
 	}
 
 	private void viewTransferHistory() {
 		// TODO Auto-generated method stub
+		Transfer[] transferList = applicationService.getMyTransfers(currentUser.getToken());
+		System.out.println(transferListHeader);
+
+		//TODO need to be able to see account from
+		for (Transfer transfer : transferList) {
+			Long toAccount = transfer.getAccount_to();
+			String username = applicationService.findUsernameByAccountId(toAccount, currentUser.getToken()).getUsername();
+			System.out.println(transfer.getTransfer_id() + "\t\t\t" + username + "\t\t\t$" + transfer.getAmount());
+		}
 
 	}
 
 	private void viewPendingRequests() {
-		// TODO Auto-generated method stub
+		// TODO pending transfers currently show all transfers, not just pending
+		Transfer[] transferList = applicationService.getMyPendingTransfers(currentUser.getToken());
+		System.out.println(transferListHeader);
 
+		// TODO need to be able to see account FROM as well
+		for (Transfer transfer : transferList) {
+			Long toAccount = transfer.getAccount_to();
+			String username = applicationService.findUsernameByAccountId(toAccount, currentUser.getToken()).getUsername();
+			System.out.println(transfer.getTransfer_id() + "\t\t\t" + username + "\t\t\t$" + transfer.getAmount());
+		}
 	}
 
 	private void sendBucks() {
-		User[]	userList = applicationService.getAllUsers(currentUser.getToken());
+		User[] userList = applicationService.getAllUsers(currentUser.getToken());
 		for (User user : userList) {
 			System.out.println("Username: " + user.getUsername() + "(ID: " + user.getId() + ")");
 		}
@@ -106,10 +127,9 @@ public class App {
 
 		Transfer newTransfer = applicationService.sendTransfer(transfer, currentUser.getToken());
 
-		if (newTransfer.getTransfer_status_id() == 2L) {
-			System.out.println("Transfer completed. Returning to menu.");
-		} else if (newTransfer.getTransfer_status_id() == 3L) {
-			System.out.println("Transfer could not be completed. Please check funds and try again.");
+		// TODO: Check DAO mapping of new transfer when transfer sent
+		if (newTransfer.getTransfer_status_id()!= null) {
+		System.out.println("New Transfer Created With Status Code" + newTransfer.getTransfer_status_id());
 		}
 	}
 
@@ -131,7 +151,6 @@ public class App {
 		Transfer newTransfer = applicationService.requestTransfer(transfer, currentUser.getToken());
 
 		System.out.println("Transfer requested. Returning to main menu.");
-
 	}
 
 	private void exitProgram() {
