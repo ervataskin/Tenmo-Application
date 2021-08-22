@@ -7,11 +7,9 @@ import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transfer;
 import com.techelevator.tenmo.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.security.Principal;
@@ -43,26 +41,29 @@ public class ApplicationController {
                 userlist.remove(user);
             }
         }
-
         return userlist;
     }
 
-    @RequestMapping(path = "/send", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(path = "/transfers/send", method = RequestMethod.POST)
         public Transfer sendTransfer(@RequestBody Transfer transfer, Principal principal) {
-            // find account id of current user, map to accountFrom.
             int userId = userDao.findIdByUsername(principal.getName());
             Long accountFrom = accountDao.getAccountByUserId((long) userId).getAccount_id();
 
-            // convert userId to accountId for recipient, map to accountTo.
             Long accountTo = accountDao.getAccountByUserId(transfer.getAccount_to()).getAccount_id();
 
-            //actually send the diddly dern transfer
             return transferDao.sendTransfer(accountFrom, accountTo, transfer.getAmount());
         }
 
-    @RequestMapping(path = "/request", method = RequestMethod.POST)
-    public Transfer requestTransfer(Long accountFrom, Long accountTo, BigDecimal amount){
-     return transferDao.requestTransfer(accountFrom, accountTo,amount);
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(path = "/transfers/request", method = RequestMethod.POST)
+    public Transfer requestTransfer(@RequestBody Transfer transfer, Principal principal){
+        int userId = userDao.findIdByUsername(principal.getName());
+        Long accountTo = accountDao.getAccountByUserId((long) userId).getAccount_id();
+
+        Long accountFrom = accountDao.getAccountByUserId(transfer.getAccount_from()).getAccount_id();
+
+        return transferDao.requestTransfer(accountFrom, accountTo, transfer.getAmount());
     }
 
     @RequestMapping(path = "/transfers", method = RequestMethod.GET)
@@ -70,6 +71,12 @@ public class ApplicationController {
          int userId = userDao.findIdByUsername(principal.getName());
          return transferDao.getMyTransfers((long) userId);
 
+    }
+
+    @RequestMapping (path = "/transfers/pending", method = RequestMethod.GET)
+    public List<Transfer> getPendingTransfers(Principal principal) {
+        int userId = userDao.findIdByUsername(principal.getName());
+        return transferDao.getPendingTransfers((long) userId);
     }
 
     @RequestMapping(path = "/transfers/approve", method = RequestMethod.PUT)

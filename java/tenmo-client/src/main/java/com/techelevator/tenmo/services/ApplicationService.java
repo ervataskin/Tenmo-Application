@@ -40,7 +40,7 @@ public class ApplicationService {
 
     public Transfer sendTransfer (Transfer transfer, String token){
         try {
-            restTemplate.exchange(BASE_URL + "send", HttpMethod.POST, makeTransferEntity(transfer, token), Transfer.class);
+            restTemplate.exchange(BASE_URL + "transfers/send", HttpMethod.POST, makeTransferEntity(transfer, token), Transfer.class);
         } catch (RestClientResponseException ex) {
             ex.printStackTrace();
         }
@@ -48,14 +48,13 @@ public class ApplicationService {
     }
 
     public Transfer requestTransfer (String token,Transfer transfer){
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity entity = new HttpEntity(headers);
-        ResponseEntity<Transfer> response = restTemplate.exchange(BASE_URL + "request", HttpMethod.POST, entity, Transfer.class);
-        return response.getBody();
+        try {
+            restTemplate.exchange(BASE_URL + "transfers/request", HttpMethod.POST, makeTransferEntity(transfer, token), Transfer.class);
+        } catch (RestClientResponseException ex) {
+            ex.printStackTrace();
+        }
+        return transfer;
     }
-   // public List<Transfer> getMyTransfers (String token, Transfer transfer){
-
 
     
     public Transfer approveTransfer (String token, Long transferId) {

@@ -8,6 +8,7 @@ import com.techelevator.view.ConsoleService;
 import io.cucumber.java.bs.A;
 
 import java.math.BigDecimal;
+import java.sql.SQLOutput;
 
 public class App {
 
@@ -89,7 +90,6 @@ public class App {
 	}
 
 	private void sendBucks() {
-		// TODO Auto-generated method stub
 		User[]	userList = applicationService.getAllUsers(currentUser.getToken());
 		for (User user : userList) {
 			System.out.println("Username: " + user.getUsername() + "(ID: " + user.getId() + ")");
@@ -106,6 +106,12 @@ public class App {
 		System.out.println(transfer.getAccount_to() + " " + transfer.getAmount());
 
 		Transfer newTransfer = applicationService.sendTransfer(transfer, currentUser.getToken());
+
+		if (newTransfer.getTransfer_status_id() == 2L) {
+			System.out.println("Transfer completed. Returning to menu.");
+		} else if (newTransfer.getTransfer_status_id() == 3L) {
+			System.out.println("Transfer could not be completed. Please check funds and try again.");
+		}
 	}
 
 	private void requestBucks() {
