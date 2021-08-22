@@ -55,7 +55,7 @@ public class ApplicationService {
                 restTemplate.exchange(BASE_URL + "transfers/pending", HttpMethod.GET, entity, Transfer[].class);
         return response.getBody();
     }
-        
+
 
     public Transfer sendTransfer (Transfer transfer, String token){
         try {

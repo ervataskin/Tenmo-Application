@@ -77,6 +77,7 @@ public class App {
 		// TODO Auto-generated method stub
 		Account account = applicationService.getMyBalance(currentUser.getToken());
 		System.out.println("Current Balance: " + account.getBalance());
+		System.out.println(currentUser.getToken());
 	}
 
 	private void viewTransferHistory() {
