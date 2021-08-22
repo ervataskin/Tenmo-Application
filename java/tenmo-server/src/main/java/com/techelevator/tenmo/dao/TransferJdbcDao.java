@@ -25,12 +25,16 @@ public class TransferJdbcDao implements TransferDao{
 
     @Override
     public Transfer getTransferById(Long transferId) {
-        Transfer transfer = null;
-        String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount" +
-                "FROM transfers WHERE transfer_id = ?;";
+        Transfer transfer = new Transfer();
+        String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount FROM transfers WHERE transfer_id = ?;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, transferId);
         if (results.next()) {
-            transfer = mapRowToTransfer(results);
+            transfer.setTransfer_id(results.getLong("transfer_id"));
+            transfer.setTransfer_type_id(results.getLong("transfer_type_id"));
+            transfer.setTransfer_status_id(results.getLong("transfer_status_id"));
+            transfer.setAccount_to(results.getLong("account_to"));
+            transfer.setAccount_from(results.getLong("account_from"));
+            transfer.setAmount(results.getBigDecimal("amount"));
         }
         return transfer;
     }
@@ -40,7 +44,7 @@ public class TransferJdbcDao implements TransferDao{
         List<Transfer> myTransfers = new ArrayList<>();
 
         Account account = accountDao.getAccountByUserId(userId);
-        Long accountId = account.getId();
+        Long accountId = account.getAccount_id();
 
         String sql = "SELECT transfer_id FROM transfers WHERE account_from = ? OR account_to = ?;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId, accountId);
@@ -62,7 +66,7 @@ public class TransferJdbcDao implements TransferDao{
     public Long createTransfer(Long transferType, Long accountFrom, Long accountTo, BigDecimal amount) {
         Long transferStatus = 1L;
         String sql = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
-                "VALUES (?, ?, ?, ?, ?, ?) RETURNING transfer_id;";
+                "VALUES (?, ?, ?, ?, ?) RETURNING transfer_id;";
         Long newId = jdbcTemplate.queryForObject(sql, Long.class, transferType, transferStatus, accountFrom, accountTo, amount);
         return newId;
     }
@@ -88,20 +92,16 @@ public class TransferJdbcDao implements TransferDao{
     @Override
     public Transfer approveTransfer(Long transferId) {
         Transfer transfer = getTransferById(transferId);
-        Long toId = transfer.getAccountTo();
-        Long fromId = transfer.getAccountFrom();
+        Long toId = transfer.getAccount_to();
+        Long fromId = transfer.getAccount_from();
         BigDecimal transferAmount = transfer.getAmount();
 
         boolean fundsCheck = accountDao.checkAccountBalance(fromId, transferAmount);
 
         if (fundsCheck) {
             Long statusId = 2L;
-            BigDecimal newFrom = accountDao.withdraw(fromId, transferAmount);
-            accountDao.updateAccount(fromId, newFrom);
-
-            BigDecimal newTo = accountDao.deposit(toId, transferAmount);
-            accountDao.updateAccount(toId, newTo);
-
+            accountDao.withdraw(fromId, transferAmount);
+            accountDao.deposit(toId, transferAmount);
             updateTransferStatus(transferId, statusId);
         } else {
             rejectTransfer(transferId);
@@ -125,11 +125,11 @@ public class TransferJdbcDao implements TransferDao{
 
     private Transfer mapRowToTransfer(SqlRowSet results) {
         Transfer transfer = new Transfer();
-        transfer.setId(results.getLong("transfer_id"));
-        transfer.setTypeId(results.getLong("transfer_type_id"));
-        transfer.setStatusId(results.getLong("transfer_status_id"));
-        transfer.setAccountFrom(results.getLong("account_from"));
-        transfer.setAccountTo(results.getLong("account_to"));
+        transfer.setTransfer_id(results.getLong("transfer_id"));
+        transfer.setTransfer_type_id(results.getLong("transfer_type_id"));
+        transfer.setTransfer_status_id(results.getLong("transfer_status_id"));
+        transfer.setAccount_from(results.getLong("account_from"));
+        transfer.setAccount_to(results.getLong("account_to"));
         transfer.setAmount(results.getBigDecimal("amount"));
         return transfer;
     }

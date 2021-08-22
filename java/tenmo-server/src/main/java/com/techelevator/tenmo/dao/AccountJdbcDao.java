@@ -45,11 +45,11 @@ public class AccountJdbcDao implements AccountDao{
 
     @Override
     public Account getAccountByUserId(Long userId) {
-        Account account = null;
+        Account account = new Account();
         String sql = "SELECT account_id FROM accounts WHERE user_id = ?;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
         if (results.next()) {
-            account = mapRowToAccount(results);
+            account.setAccount_id(results.getLong("account_id"));
         }
         return account;
     }
@@ -70,28 +70,30 @@ public class AccountJdbcDao implements AccountDao{
     }
 
     @Override
-    public BigDecimal withdraw(Long accountId, BigDecimal fromAmount) {
+    public void withdraw(Long accountId, BigDecimal fromAmount) {
         BigDecimal fromBalance = getAccountById(accountId).getBalance();
-        return fromBalance.subtract(fromAmount);
+        BigDecimal newBalance = fromBalance.subtract(fromAmount);
+        updateAccount(accountId, newBalance);
     }
 
     @Override
-    public BigDecimal deposit(Long accountId, BigDecimal toAmount) {
+    public void deposit(Long accountId, BigDecimal toAmount) {
         BigDecimal toBalance = getAccountById(accountId).getBalance();
-        return toBalance.add(toAmount);
+        BigDecimal newBalance = toBalance.add(toAmount);
+        updateAccount(accountId, newBalance);
     }
 
     @Override
     public void updateAccount(Long acctId, BigDecimal newBalance) {
         String sql = "UPDATE accounts SET balance = ? WHERE account_id = ?;";
-        jdbcTemplate.update(sql, acctId, newBalance);
+        jdbcTemplate.update(sql, newBalance, acctId);
     }
 
     private Account mapRowToAccount(SqlRowSet results) {
         Account account = new Account();
-        account.setId(results.getLong("account_id"));
+        account.setAccount_id(results.getLong("account_id"));
         account.setBalance(results.getBigDecimal("balance"));
-        account.setUserId(results.getLong("user_id"));
+        account.setUser_id(results.getLong("user_id"));
         return account;
     }
 

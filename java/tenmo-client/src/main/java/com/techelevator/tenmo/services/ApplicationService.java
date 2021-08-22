@@ -3,10 +3,10 @@ package com.techelevator.tenmo.services;
 import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transfer;
 import com.techelevator.tenmo.model.User;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -29,20 +29,22 @@ public class ApplicationService {
         return response.getBody();
     }
 
-//    public List<User> Allusers (String token){
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setBearerAuth(token);
-//        HttpEntity entity = new HttpEntity(headers);
-//        ResponseEntity<List<User>>response = restTemplate.exchange(BASE_URL + "users", HttpMethod.GET, entity, User.class);
-//        return response.getBody();
-//
-//    }
-    public Transfer sendTransfer (String token,long transferId){
+    public User[] getAllUsers(String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         HttpEntity entity = new HttpEntity(headers);
-        ResponseEntity<Transfer> response = restTemplate.exchange(BASE_URL + "send", HttpMethod.POST, entity, Transfer.class);
+        ResponseEntity<User[]> response =
+                restTemplate.exchange(BASE_URL + "users", HttpMethod.GET, entity, User[].class);
         return response.getBody();
+    }
+
+    public Transfer sendTransfer (Transfer transfer, String token){
+        try {
+            restTemplate.exchange(BASE_URL + "send", HttpMethod.POST, makeTransferEntity(transfer, token), Transfer.class);
+        } catch (RestClientResponseException ex) {
+            ex.printStackTrace();
+        }
+        return transfer;
     }
 
     public Transfer requestTransfer (String token,Transfer transfer){
@@ -75,5 +77,13 @@ public class ApplicationService {
         return response.getBody();
 
 
+    }
+
+    private HttpEntity<Transfer> makeTransferEntity(Transfer transfer, String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(token);
+        HttpEntity<Transfer> entity = new HttpEntity<>(transfer, headers);
+        return entity;
     }
 }

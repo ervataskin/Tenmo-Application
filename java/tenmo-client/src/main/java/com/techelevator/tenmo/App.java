@@ -1,13 +1,13 @@
 package com.techelevator.tenmo;
 
-import com.techelevator.tenmo.model.Account;
-import com.techelevator.tenmo.model.AuthenticatedUser;
-import com.techelevator.tenmo.model.UserCredentials;
+import com.techelevator.tenmo.model.*;
 import com.techelevator.tenmo.services.ApplicationService;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.AuthenticationServiceException;
 import com.techelevator.view.ConsoleService;
 import io.cucumber.java.bs.A;
+
+import java.math.BigDecimal;
 
 public class App {
 
@@ -90,7 +90,22 @@ public class App {
 
 	private void sendBucks() {
 		// TODO Auto-generated method stub
+		User[]	userList = applicationService.getAllUsers(currentUser.getToken());
+		for (User user : userList) {
+			System.out.println("Username: " + user.getUsername() + "(ID: " + user.getId() + ")");
+		}
 
+		String toUser = console.getUserInput("Enter the ID of the user you want to send TE bucks to");
+		String amount = console.getUserInput("Enter the amount to send");
+
+		Transfer transfer = new Transfer();
+
+		transfer.setAccount_to(Long.valueOf(toUser));
+		transfer.setAmount(new BigDecimal(amount));
+
+		System.out.println(transfer.getAccount_to() + " " + transfer.getAmount());
+
+		Transfer newTransfer = applicationService.sendTransfer(transfer, currentUser.getToken());
 	}
 
 	private void requestBucks() {

@@ -16,9 +16,9 @@ public interface AccountDao {
 
     boolean checkAccountBalance(Long accountId, BigDecimal amount);
 
-    BigDecimal withdraw(Long accountId, BigDecimal fromAmount);
+    void withdraw(Long accountId, BigDecimal fromAmount);
 
-    BigDecimal deposit(Long accountId, BigDecimal toAmount);
+    void deposit(Long accountId, BigDecimal toAmount);
 
     void updateAccount(Long accountId, BigDecimal newBalance);
 }
